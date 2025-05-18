@@ -1,0 +1,22 @@
+# Rust build artifacts
+/target
+
+# Git
+.git
+.gitignore
+
+# Editor files
+.vscode
+.idea
+
+# Environment files (uncomment if you don't want to include them in the image)
+# .env
+
+# Misc
+README.md
+.DS_Store
+
+# Docker files
+Dockerfile
+docker-compose.yml
+.dockerignore 

@@ -1,18 +1,35 @@
-name: fin_stack_api
+name: fin_stack_app
 
 services:
+  # PostgreSQL Database
   postgres:
-    image: postgres:17
-    container_name: fin_stack_db
-    environment:
-      POSTGRES_DB: finstack
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: passw0rd
+    image: postgres:16
+    container_name: finstack_postgres
+    restart: always
     ports:
       - "5432:5432"
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: passw0rd
+      POSTGRES_DB: finstack
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    restart: unless-stopped
+
+  # API Server
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: finstack_api
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      - DATABASE_URL=postgres://user:passw0rd@postgres:5432/finstack
+      - SERVER_URL=0.0.0.0:8080
+      - RUST_LOG=info
+    depends_on:
+      - postgres
 
 volumes:
   postgres_data: 

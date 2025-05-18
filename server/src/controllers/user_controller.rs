@@ -1,5 +1,6 @@
 use actix_web::{web, HttpResponse};
 use chrono::Utc;
+use utoipa::{IntoParams, ToSchema};
 use uuid::Uuid;
 use serde_json::json;
 
@@ -30,12 +31,42 @@ fn validate_new_user(user: &NewUser) -> Result<(), AppError> {
     Ok(())
 }
 
+/// Path parameters for user endpoints
+#[derive(IntoParams)]
+pub struct UserIdParam {
+    /// User ID
+    userId: String,
+}
+
+/// Get all users
+#[utoipa::path(
+    get,
+    path = "/api/users",
+    responses(
+        (status = 200, description = "List of all users", body = [User]),
+        (status = 500, description = "Internal server error")
+    ),
+    tag = "users"
+)]
 pub async fn get_all_users(pool: web::Data<DbPool>) -> Result<HttpResponse, AppError> {
     let mut conn = pool.get()?;
     let users = user_service::get_all_users(&mut conn)?;
     Ok(response::ok(users))
 }
 
+/// Get a specific user by ID
+#[utoipa::path(
+    get,
+    path = "/api/users/{userId}",
+    params(UserIdParam),
+    responses(
+        (status = 200, description = "User found", body = User),
+        (status = 400, description = "Invalid UUID format"),
+        (status = 404, description = "User not found"),
+        (status = 500, description = "Internal server error")
+    ),
+    tag = "users"
+)]
 pub async fn get_user_by_id(
     pool: web::Data<DbPool>, 
     path: web::Path<String>
@@ -46,6 +77,18 @@ pub async fn get_user_by_id(
     Ok(response::ok(user))
 }
 
+/// Create a new user
+#[utoipa::path(
+    post,
+    path = "/api/users",
+    request_body = NewUser,
+    responses(
+        (status = 201, description = "User created successfully", body = User),
+        (status = 400, description = "Invalid input data"),
+        (status = 500, description = "Internal server error")
+    ),
+    tag = "users"
+)]
 pub async fn create_user(
     pool: web::Data<DbPool>,
     new_user: web::Json<NewUser>,
@@ -57,6 +100,20 @@ pub async fn create_user(
     Ok(response::created(user))
 }
 
+/// Update an existing user
+#[utoipa::path(
+    patch,
+    path = "/api/users/{userId}",
+    params(UserIdParam),
+    request_body = UpdateUser,
+    responses(
+        (status = 200, description = "User updated successfully", body = User),
+        (status = 400, description = "Invalid input data or UUID format"),
+        (status = 404, description = "User not found"),
+        (status = 500, description = "Internal server error")
+    ),
+    tag = "users"
+)]
 pub async fn update_user(
     pool: web::Data<DbPool>,
     path: web::Path<String>,
@@ -73,6 +130,19 @@ pub async fn update_user(
     Ok(response::ok(user))
 }
 
+/// Delete a user
+#[utoipa::path(
+    delete,
+    path = "/api/users/{userId}",
+    params(UserIdParam),
+    responses(
+        (status = 200, description = "User deleted successfully"),
+        (status = 400, description = "Invalid UUID format"),
+        (status = 404, description = "User not found"),
+        (status = 500, description = "Internal server error")
+    ),
+    tag = "users"
+)]
 pub async fn delete_user(
     pool: web::Data<DbPool>, 
     path: web::Path<String>
