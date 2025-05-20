@@ -1,20 +1,13 @@
-# Stage 1: Build the app using Rust official image
-FROM rust:1.82 as builder
+# Stage 1: Build the app using Rust Alpine image
+FROM rust:1.70-alpine AS builder
 
-# Install dependencies needed for build
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-    pkg-config \
-    libssl-dev \
-    libpq-dev \
-    build-essential && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+# Install build dependencies
+RUN apk add --no-cache build-base openssl-dev postgresql-dev
 
 # Set working directory
 WORKDIR /app
 
-# Copy Cargo files (only Cargo.toml, we'll generate a fresh Cargo.lock)
+# Copy Cargo files
 COPY Cargo.toml ./
 
 # Copy source code
@@ -24,26 +17,28 @@ COPY src ./src
 COPY migrations ./migrations
 COPY diesel.toml ./diesel.toml
 
-# Build the application (this will generate a fresh Cargo.lock compatible with this Rust version)
-RUN cargo build --release
+# Build the application
+RUN cargo build --release && \
+    ls -la /app/target/release/
 
 # Stage 2: Create a smaller production image
-FROM debian:bookworm-slim
+FROM alpine:3.18
 
 # Install only what's needed to run the binary
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-    libssl3 \
-    libpq5 \
-    ca-certificates && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache \
+    openssl \
+    postgresql-client \
+    ca-certificates
 
 # Set working directory
 WORKDIR /app
 
 # Copy the compiled binary from builder
-COPY --from=builder /app/target/release/server /usr/local/bin/app
+COPY --from=builder /app/target/release/server /usr/local/bin/server
+
+# Verify binary exists and is executable
+RUN ls -la /usr/local/bin/server && \
+    chmod +x /usr/local/bin/server
 
 # Copy migrations directory for database setup
 COPY --from=builder /app/migrations ./migrations
@@ -56,4 +51,4 @@ RUN mkdir -p logs
 EXPOSE 8080
 
 # Start the application
-CMD ["app"]
+CMD ["/usr/local/bin/server"]
