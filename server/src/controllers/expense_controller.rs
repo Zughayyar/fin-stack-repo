@@ -35,16 +35,16 @@ fn validate_expense_data(item_name: &str, amount: &str) -> Result<(), AppError> 
 #[derive(IntoParams)]
 pub struct ExpensePathParams {
     /// User ID
-    userId: String,
+    user_id: String,
 }
 
 /// Path parameters for specific expense endpoints
 #[derive(IntoParams)]
 pub struct ExpenseIdPathParams {
     /// User ID
-    userId: String,
+    user_id: String,
     /// Expense ID
-    expenseId: String,
+    expense_id: String,
 }
 
 /// Get all expenses for a user

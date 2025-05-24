@@ -35,16 +35,16 @@ fn validate_income_data(source: &str, amount: &str) -> Result<(), AppError> {
 #[derive(IntoParams)]
 pub struct IncomePathParams {
     /// User ID
-    userId: String,
+    user_id: String,
 }
 
 /// Path parameters for specific income endpoints
 #[derive(IntoParams)]
 pub struct IncomeIdPathParams {
     /// User ID
-    userId: String,
+    user_id: String,
     /// Income ID
-    incomeId: String,
+    income_id: String,
 }
 
 /// Get all income records for a user

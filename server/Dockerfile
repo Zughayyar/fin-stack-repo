@@ -1,54 +1,73 @@
-# Stage 1: Build the app using Rust Alpine image
-FROM rust:1.70-alpine AS builder
+## Build
+####################################################################################################
+# rust:alpine3.21
+FROM rust@sha256:fa7c28576553c431224a85c897c38f3a6443bd831be37061ab3560d9e797dc82 AS build
 
-# Install build dependencies
-RUN apk add --no-cache build-base openssl-dev postgresql-dev
+RUN apk update && \
+    apk upgrade --no-cache && \
+    apk add --no-cache lld mold musl musl-dev libc-dev cmake clang clang-dev openssl file \
+         git make build-base bash curl wget zip gnupg coreutils gcc g++ zstd binutils ca-certificates upx libpq-dev
 
-# Set working directory
-WORKDIR /app
+WORKDIR /myproject
+COPY . ./
+# or make build
+RUN cargo build --release
 
-# Copy Cargo files
-COPY Cargo.toml ./
 
-# Copy source code
-COPY src ./src
+####################################################################################################
+## This stage is used to get the correct files into the final image
+####################################################################################################
+# alpine:3.21
+FROM alpine@sha256:a8560b36e8b8210634f77d9f7f9efd7ffa463e380b75e2e74aff4511df3ef88c AS files
 
-# Copy migrations and diesel configuration
-COPY migrations ./migrations
-COPY diesel.toml ./diesel.toml
+# mailcap is used for content type (MIME type) detection
+# tzdata is used for timezones info
+RUN apk update && \
+    apk upgrade --no-cache && \
+    apk add --no-cache ca-certificates mailcap tzdata
 
-# Build the application
-RUN cargo build --release && \
-    ls -la /app/target/release/
+RUN update-ca-certificates
 
-# Stage 2: Create a smaller production image
-FROM alpine:3.18
+ENV USER=myproject
+ENV UID=10001
+RUN adduser \
+    --disabled-password \
+    --gecos "" \
+    --home "/nonexistent" \
+    --shell "/sbin/nologin" \
+    --no-create-home \
+    --uid "${UID}" \
+    "${USER}"
 
-# Install only what's needed to run the binary
-RUN apk add --no-cache \
-    openssl \
-    postgresql-client \
-    ca-certificates
 
-# Set working directory
-WORKDIR /app
+####################################################################################################
+## Final image
+####################################################################################################
+FROM scratch
 
-# Copy the compiled binary from builder
-COPY --from=builder /app/target/release/server /usr/local/bin/server
+# /etc/nsswitch.conf may be used by some DNS resolvers
+# /etc/mime.types may be used to detect the MIME type of files
+COPY --from=files --chmod=444 \
+    /etc/passwd \
+    /etc/group \
+    /etc/nsswitch.conf \
+    /etc/mime.types \
+    /etc/
 
-# Verify binary exists and is executable
-RUN ls -la /usr/local/bin/server && \
-    chmod +x /usr/local/bin/server
+COPY --from=files --chmod=444 /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+COPY --from=files --chmod=444 /usr/share/zoneinfo /usr/share/zoneinfo
 
-# Copy migrations directory for database setup
-COPY --from=builder /app/migrations ./migrations
-COPY --from=builder /app/diesel.toml ./diesel.toml
+# Copy our build
+COPY --from=build /myproject/target/release/server /bin/server
 
-# Create directory for logs if needed
-RUN mkdir -p logs
+# Use an unprivileged user.
+USER myproject:myproject
 
-# Expose the application port
-EXPOSE 8080
+# the scratch image doesn't have a /tmp folder, you may need it
+WORKDIR /tmp
 
-# Start the application
-CMD ["/usr/local/bin/server"]
+WORKDIR /myproject
+
+ENTRYPOINT ["/bin/server"]
+
+# EXPOSE 8080

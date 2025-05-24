@@ -35,7 +35,7 @@ fn validate_new_user(user: &NewUser) -> Result<(), AppError> {
 #[derive(IntoParams)]
 pub struct UserIdParam {
     /// User ID
-    userId: String,
+    user_id: String,
 }
 
 /// Get all users

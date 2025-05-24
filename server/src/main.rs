@@ -1,5 +1,5 @@
 use actix_web::{App, HttpServer, middleware::Logger};
-use actix_web::{web, HttpResponse, Responder, HttpRequest};
+use actix_web::{web, HttpResponse, Responder};
 use dotenv::dotenv;
 use std::io;
 use utoipa::OpenApi;
