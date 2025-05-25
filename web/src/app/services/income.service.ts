@@ -14,10 +14,30 @@ export interface Income {
   updated_at: string;
 }
 
-export interface CreateIncomeRequest {
+// New/Updated Interfaces based on OpenAPI spec
+export interface GetAllIncomeBody {
+  user_id: string;
+}
+
+export interface CreateIncomeRequestBody { // Replaces CreateIncomeRequest
+  user_id: string;
   source: string;
   amount: string;
   date: string;
+  description?: string;
+}
+
+export interface IncomeActionBody {
+  user_id: string;
+  income_id: string;
+}
+
+export interface UpdateIncomeRequestBody { // Replaces Partial<CreateIncomeRequest> for update
+  user_id: string;
+  income_id: string;
+  source?: string;
+  amount?: string;
+  date?: string;
   description?: string;
 }
 
@@ -29,23 +49,28 @@ export class IncomeService {
 
   constructor(private http: HttpClient) {}
 
-  getIncomes(userId: string): Observable<Income[]> {
-    return this.http.get<Income[]>(`${this.apiUrl}/users/${userId}/income`);
+  // GET /api/income
+  getIncomes(body: GetAllIncomeBody): Observable<Income[]> {
+    return this.http.post<Income[]>(`${this.apiUrl}/api/income/get-all`, body);
   }
 
-  getIncomeById(userId: string, incomeId: string): Observable<Income> {
-    return this.http.get<Income>(`${this.apiUrl}/users/${userId}/income/${incomeId}`);
+  // POST /api/income
+  createIncome(income: CreateIncomeRequestBody): Observable<Income> {
+    return this.http.post<Income>(`${this.apiUrl}/api/income/create`, income);
   }
 
-  createIncome(userId: string, income: CreateIncomeRequest): Observable<Income> {
-    return this.http.post<Income>(`${this.apiUrl}/users/${userId}/income`, income);
+  // POST /api/income/actions (for get by ID)
+  getIncomeById(body: IncomeActionBody): Observable<Income> {
+    return this.http.post<Income>(`${this.apiUrl}/api/income/get-by-id`, body);
   }
 
-  updateIncome(userId: string, incomeId: string, income: Partial<CreateIncomeRequest>): Observable<Income> {
-    return this.http.patch<Income>(`${this.apiUrl}/users/${userId}/income/${incomeId}`, income);
+  // PATCH /api/income/actions (for update)
+  updateIncome(income: UpdateIncomeRequestBody): Observable<Income> {
+    return this.http.patch<Income>(`${this.apiUrl}/api/income/update`, income);
   }
 
-  deleteIncome(userId: string, incomeId: string): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/users/${userId}/income/${incomeId}`);
+  // DELETE /api/income/actions (for delete)
+  deleteIncome(body: IncomeActionBody): Observable<void> {
+    return this.http.request<void>('DELETE', `${this.apiUrl}/api/income/delete`, { body });
   }
 } 

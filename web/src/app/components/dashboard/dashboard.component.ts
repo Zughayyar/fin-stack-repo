@@ -1,84 +1,109 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute } from '@angular/router';
-import { UserService, User } from '../../services/user.service';
+import { RouterModule, ActivatedRoute } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { ExpenseService, Expense } from '../../services/expense.service';
 import { IncomeService, Income } from '../../services/income.service';
+import { User, UserService } from '../../services/user.service';
+import { AddIncomeComponent } from '../add-income/add-income.component';
+import { AddExpenseComponent } from '../add-expense/add-expense.component';
 
 @Component({
   selector: 'app-dashboard',
-  templateUrl: './dashboard.component.html',
   standalone: true,
-  imports: [CommonModule]
+  imports: [CommonModule, RouterModule, FormsModule, AddIncomeComponent, AddExpenseComponent],
+  templateUrl: './dashboard.component.html'
 })
 export class DashboardComponent implements OnInit {
-  currentUser?: User;
+  currentUser: User | null = null;
   expenses: Expense[] = [];
   incomes: Income[] = [];
   selectedMonth: Date = new Date();
-  totalIncome: number = 0;
   totalExpenses: number = 0;
+  totalIncome: number = 0;
   balance: number = 0;
 
   constructor(
-    private route: ActivatedRoute,
-    private userService: UserService,
     private expenseService: ExpenseService,
-    private incomeService: IncomeService
+    private incomeService: IncomeService,
+    private userService: UserService,
+    private route: ActivatedRoute
   ) {}
 
-  ngOnInit(): void {
+  ngOnInit() {
     this.route.params.subscribe(params => {
       const userId = params['userId'];
+      console.log('Loading user data for ID from route:', userId);
       if (userId) {
         this.loadUserData(userId);
+      } else {
+        console.error('No user ID found in route parameters');
       }
     });
   }
 
-  loadUserData(userId: string): void {
-    // Load user details
-    this.userService.getUserById(userId).subscribe(user => {
-      this.currentUser = user;
-    });
-
-    // Load expenses
-    this.expenseService.getExpenses(userId).subscribe(expenses => {
-      this.expenses = this.filterByMonth(expenses);
-      this.calculateTotals();
-    });
-
-    // Load incomes
-    this.incomeService.getIncomes(userId).subscribe(incomes => {
-      this.incomes = this.filterByMonth(incomes);
-      this.calculateTotals();
+  loadUserData(userId: string) {
+    this.userService.getUserById(userId).subscribe({
+      next: (user) => {
+        console.log('User data loaded:', user);
+        this.currentUser = user;
+        this.loadExpenses(userId);
+        this.loadIncomes(userId);
+      },
+      error: (error) => {
+        console.error('Error loading user:', error);
+      }
     });
   }
 
-  filterByMonth<T extends { date: string }>(items: T[]): T[] {
-    const startOfMonth = new Date(this.selectedMonth.getFullYear(), this.selectedMonth.getMonth(), 1);
-    const endOfMonth = new Date(this.selectedMonth.getFullYear(), this.selectedMonth.getMonth() + 1, 0);
-    
-    return items.filter(item => {
-      const itemDate = new Date(item.date);
-      return itemDate >= startOfMonth && itemDate <= endOfMonth;
+  loadExpenses(userId: string) {
+    this.expenseService.getExpenses({ user_id: userId }).subscribe({
+      next: (expenses) => {
+        this.expenses = expenses;
+        this.calculateTotals();
+      },
+      error: (error) => {
+        console.error('Error loading expenses:', error);
+      }
     });
   }
 
-  calculateTotals(): void {
-    this.totalIncome = this.incomes.reduce((sum, income) => sum + parseFloat(income.amount), 0);
-    this.totalExpenses = this.expenses.reduce((sum, expense) => sum + parseFloat(expense.amount), 0);
+  loadIncomes(userId: string) {
+    this.incomeService.getIncomes({ user_id: userId }).subscribe({
+      next: (incomes) => {
+        this.incomes = incomes;
+        this.calculateTotals();
+      },
+      error: (error) => {
+        console.error('Error loading incomes:', error);
+      }
+    });
+  }
+
+  calculateTotals() {
+    this.totalExpenses = this.expenses.reduce((sum, expense) => sum + Number(expense.amount), 0);
+    this.totalIncome = this.incomes.reduce((sum, income) => sum + Number(income.amount), 0);
     this.balance = this.totalIncome - this.totalExpenses;
   }
 
-  changeMonth(months: number): void {
+  changeMonth(delta: number) {
     this.selectedMonth = new Date(
       this.selectedMonth.getFullYear(),
-      this.selectedMonth.getMonth() + months,
+      this.selectedMonth.getMonth() + delta,
       1
     );
+    // You might want to reload the data for the new month here
+  }
+
+  onIncomeAdded() {
     if (this.currentUser) {
-      this.loadUserData(this.currentUser.id);
+      this.loadIncomes(this.currentUser.id);
+    }
+  }
+
+  onExpenseAdded() {
+    if (this.currentUser) {
+      this.loadExpenses(this.currentUser.id);
     }
   }
 } 

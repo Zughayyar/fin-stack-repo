@@ -12,6 +12,9 @@
       <span class="text-lg font-medium">{{ selectedMonth | date:'MMMM yyyy' }}</span>
       <button (click)="changeMonth(1)" class="px-4 py-2 border border-gray-200 rounded hover:bg-gray-50 transition-colors cursor-pointer">→</button>
     </div>
+    <div class="flex items-center gap-2">
+      <a routerLink="/" class="px-4 py-2 border border-gray-200 rounded hover:bg-gray-50 transition-colors cursor-pointer">Back home</a>
+    </div>
   </header>
 
   <!-- Summary Cards -->
@@ -38,7 +41,7 @@
     <section>
       <div class="flex justify-between items-center mb-4">
         <h2 class="text-2xl font-semibold text-gray-900">Income</h2>
-        <button class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors cursor-pointer">+ Add Income</button>
+        <button (click)="addIncomeComponent.open(currentUser?.id || '')" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors cursor-pointer">+ Add Income</button>
       </div>
       <div class="bg-white rounded-lg shadow-sm overflow-hidden">
         <table class="w-full">
@@ -71,7 +74,7 @@
     <section>
       <div class="flex justify-between items-center mb-4">
         <h2 class="text-2xl font-semibold text-gray-900">Expenses</h2>
-        <button class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors cursor-pointer">+ Add Expense</button>
+        <button (click)="addExpenseComponent.open(currentUser?.id || '')" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors cursor-pointer">+ Add Expense</button>
       </div>
       <div class="bg-white rounded-lg shadow-sm overflow-hidden">
         <table class="w-full">
@@ -100,4 +103,17 @@
       </div>
     </section>
   </div>
+
+  <!-- Add the components at the end of the file -->
+  <app-add-income
+    #addIncomeComponent
+    (incomeAdded)="onIncomeAdded()"
+    (closed)="onIncomeAdded()"
+  ></app-add-income>
+
+  <app-add-expense
+    #addExpenseComponent
+    (expenseAdded)="onExpenseAdded()"
+    (closed)="onExpenseAdded()"
+  ></app-add-expense>
 </div> 
