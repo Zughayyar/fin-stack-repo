@@ -14,7 +14,7 @@ diesel::table! {
 }
 
 diesel::table! {
-    income (id) {
+    incomes (id) {
         id -> Uuid,
         user_id -> Uuid,
         source -> Varchar,
@@ -39,10 +39,10 @@ diesel::table! {
 }
 
 diesel::joinable!(expenses -> users (user_id));
-diesel::joinable!(income -> users (user_id));
+diesel::joinable!(incomes -> users (user_id));
 
 diesel::allow_tables_to_appear_in_same_query!(
     expenses,
-    income,
+    incomes,
     users,
-); 
+);

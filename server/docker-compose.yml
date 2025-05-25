@@ -1,3 +1,4 @@
+name: finstack_app
 services:
   # PostgreSQL Database
   postgres:
