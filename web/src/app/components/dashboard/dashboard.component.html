@@ -1,0 +1,103 @@
+<div class="p-8 max-w-7xl mx-auto font-sans">
+  <!-- Header Section -->
+  <header class="flex justify-between items-center mb-8">
+    <div>
+      <h1 class="text-4xl font-bold text-gray-900">Financial Dashboard</h1>
+      <p *ngIf="currentUser" class="text-lg text-gray-600 mt-1">
+        {{ currentUser.first_name }} {{ currentUser.last_name }}'s Dashboard
+      </p>
+    </div>
+    <div class="flex items-center gap-4">
+      <button (click)="changeMonth(-1)" class="px-4 py-2 border border-gray-200 rounded hover:bg-gray-50 transition-colors cursor-pointer">←</button>
+      <span class="text-lg font-medium">{{ selectedMonth | date:'MMMM yyyy' }}</span>
+      <button (click)="changeMonth(1)" class="px-4 py-2 border border-gray-200 rounded hover:bg-gray-50 transition-colors cursor-pointer">→</button>
+    </div>
+  </header>
+
+  <!-- Summary Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <div class="bg-white rounded-lg p-6 shadow-sm">
+      <h3 class="text-sm uppercase tracking-wider text-gray-500 mb-2">Total Income</h3>
+      <p class="text-3xl font-semibold text-green-600">${{ totalIncome | number:'1.2-2' }}</p>
+    </div>
+    <div class="bg-white rounded-lg p-6 shadow-sm">
+      <h3 class="text-sm uppercase tracking-wider text-gray-500 mb-2">Total Expenses</h3>
+      <p class="text-3xl font-semibold text-red-600">${{ totalExpenses | number:'1.2-2' }}</p>
+    </div>
+    <div class="bg-white rounded-lg p-6 shadow-sm">
+      <h3 class="text-sm uppercase tracking-wider text-gray-500 mb-2">Balance</h3>
+      <p class="text-3xl font-semibold" [ngClass]="{'text-green-600': balance >= 0, 'text-red-600': balance < 0}">
+        ${{ balance | number:'1.2-2' }}
+      </p>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="space-y-8">
+    <!-- Income Section -->
+    <section>
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-2xl font-semibold text-gray-900">Income</h2>
+        <button class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors cursor-pointer">+ Add Income</button>
+      </div>
+      <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+        <table class="w-full">
+          <thead>
+            <tr class="bg-gray-50">
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Source</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200">
+            <tr *ngFor="let income of incomes" class="hover:bg-gray-50">
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ income.date | date:'MMM d, y' }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ income.source }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${{ income.amount | number:'1.2-2' }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ income.description || '-' }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm">
+                <button class="px-3 py-1 bg-blue-50 text-blue-700 rounded hover:bg-blue-100 transition-colors mr-2 cursor-pointer">Edit</button>
+                <button class="px-3 py-1 bg-red-50 text-red-700 rounded hover:bg-red-100 transition-colors cursor-pointer">Delete</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Expenses Section -->
+    <section>
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-2xl font-semibold text-gray-900">Expenses</h2>
+        <button class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors cursor-pointer">+ Add Expense</button>
+      </div>
+      <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+        <table class="w-full">
+          <thead>
+            <tr class="bg-gray-50">
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Item</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200">
+            <tr *ngFor="let expense of expenses" class="hover:bg-gray-50">
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ expense.date | date:'MMM d, y' }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ expense.item_name }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${{ expense.amount | number:'1.2-2' }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ expense.description || '-' }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm">
+                <button class="px-3 py-1 bg-blue-50 text-blue-700 rounded hover:bg-blue-100 transition-colors mr-2 cursor-pointer">Edit</button>
+                <button class="px-3 py-1 bg-red-50 text-red-700 rounded hover:bg-red-100 transition-colors cursor-pointer">Delete</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+</div> 

@@ -1,0 +1,28 @@
+<div class="p-8 max-w-7xl mx-auto font-sans">
+  <header class="mb-8">
+    <h1 class="text-4xl font-bold text-gray-900">Users</h1>
+    <p class="text-lg text-gray-600 mt-1">Select a user to view their financial dashboard</p>
+  </header>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div *ngFor="let user of users" 
+         class="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow cursor-pointer"
+         [routerLink]="['/dashboard', user.id]">
+      <div class="flex items-center space-x-4">
+        <div class="flex-shrink-0">
+          <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
+            <span class="text-xl font-semibold text-blue-600">
+              {{ user.first_name.charAt(0) }}{{ user.last_name.charAt(0) }}
+            </span>
+          </div>
+        </div>
+        <div>
+          <h2 class="text-xl font-semibold text-gray-900">
+            {{ user.first_name }} {{ user.last_name }}
+          </h2>
+          <p class="text-gray-600">{{ user.email }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div> 
