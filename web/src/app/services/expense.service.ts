@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 export interface Expense {
   id: string;
@@ -24,27 +25,27 @@ export interface CreateExpenseRequest {
   providedIn: 'root'
 })
 export class ExpenseService {
-  private apiUrl = '/api/users';
+  private apiUrl = environment.apiUrl;
 
   constructor(private http: HttpClient) {}
 
   getExpenses(userId: string): Observable<Expense[]> {
-    return this.http.get<Expense[]>(`${this.apiUrl}/${userId}/expenses`);
+    return this.http.get<Expense[]>(`${this.apiUrl}/users/${userId}/expenses`);
   }
 
   getExpenseById(userId: string, expenseId: string): Observable<Expense> {
-    return this.http.get<Expense>(`${this.apiUrl}/${userId}/expenses/${expenseId}`);
+    return this.http.get<Expense>(`${this.apiUrl}/users/${userId}/expenses/${expenseId}`);
   }
 
   createExpense(userId: string, expense: CreateExpenseRequest): Observable<Expense> {
-    return this.http.post<Expense>(`${this.apiUrl}/${userId}/expenses`, expense);
+    return this.http.post<Expense>(`${this.apiUrl}/users/${userId}/expenses`, expense);
   }
 
   updateExpense(userId: string, expenseId: string, expense: Partial<CreateExpenseRequest>): Observable<Expense> {
-    return this.http.patch<Expense>(`${this.apiUrl}/${userId}/expenses/${expenseId}`, expense);
+    return this.http.patch<Expense>(`${this.apiUrl}/users/${userId}/expenses/${expenseId}`, expense);
   }
 
   deleteExpense(userId: string, expenseId: string): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${userId}/expenses/${expenseId}`);
+    return this.http.delete<void>(`${this.apiUrl}/users/${userId}/expenses/${expenseId}`);
   }
 } 

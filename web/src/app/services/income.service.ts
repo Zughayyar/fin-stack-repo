@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 export interface Income {
   id: string;
@@ -24,27 +25,27 @@ export interface CreateIncomeRequest {
   providedIn: 'root'
 })
 export class IncomeService {
-  private apiUrl = '/api/users';
+  private apiUrl = environment.apiUrl;
 
   constructor(private http: HttpClient) {}
 
   getIncomes(userId: string): Observable<Income[]> {
-    return this.http.get<Income[]>(`${this.apiUrl}/${userId}/income`);
+    return this.http.get<Income[]>(`${this.apiUrl}/users/${userId}/income`);
   }
 
   getIncomeById(userId: string, incomeId: string): Observable<Income> {
-    return this.http.get<Income>(`${this.apiUrl}/${userId}/income/${incomeId}`);
+    return this.http.get<Income>(`${this.apiUrl}/users/${userId}/income/${incomeId}`);
   }
 
   createIncome(userId: string, income: CreateIncomeRequest): Observable<Income> {
-    return this.http.post<Income>(`${this.apiUrl}/${userId}/income`, income);
+    return this.http.post<Income>(`${this.apiUrl}/users/${userId}/income`, income);
   }
 
   updateIncome(userId: string, incomeId: string, income: Partial<CreateIncomeRequest>): Observable<Income> {
-    return this.http.patch<Income>(`${this.apiUrl}/${userId}/income/${incomeId}`, income);
+    return this.http.patch<Income>(`${this.apiUrl}/users/${userId}/income/${incomeId}`, income);
   }
 
   deleteIncome(userId: string, incomeId: string): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${userId}/income/${incomeId}`);
+    return this.http.delete<void>(`${this.apiUrl}/users/${userId}/income/${incomeId}`);
   }
 } 
