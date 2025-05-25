@@ -21,3 +21,5 @@ r2d2 = "0.8.10"
 diesel_derives = "2.2.5"
 utoipa = { version = "3.5.0", features = ["actix_extras"] }
 utoipa-swagger-ui = { version = "3.1.5", features = ["actix-web"] }
+
+actix-cors = "0.7"

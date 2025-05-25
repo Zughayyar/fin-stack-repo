@@ -1,5 +1,6 @@
 use actix_web::{App, HttpServer, middleware::Logger};
 use actix_web::{web, HttpResponse, Responder};
+use actix_cors::Cors;
 use dotenv::dotenv;
 use std::io;
 use utoipa::OpenApi;
@@ -48,7 +49,15 @@ async fn main() -> io::Result<()> {
             .exclude_regex("/api-docs/.*")
             .exclude_regex("/.well-known/appspecific/.*");
 
+        // Configure CORS
+        let cors = Cors::default()
+            .allow_any_origin()
+            .allow_any_method()
+            .allow_any_header()
+            .max_age(3600);
+
         App::new()
+            .wrap(cors)
             .wrap(logger)
             .app_data(actix_web::web::Data::new(pool.clone()))
             .app_data(config::errors::json_error_handler())
