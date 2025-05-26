@@ -9,7 +9,7 @@ mod controllers;
 mod models;
 mod routes;
 mod services;
-
+mod database;
 
 // Redirect handler for /swagger-ui to /swagger-ui/
 async fn redirect_swagger() -> impl Responder {
@@ -24,9 +24,16 @@ async fn main() -> io::Result<()> {
     dotenv().ok();
     env_logger::init();
 
+    let database_url = config::get_database_url();
     let server_url = config::get_server_url();
     log::info!("Starting server at: {}", server_url);
     log::info!("Swagger UI available at: {}/swagger-ui/", server_url);
+
+
+    let pool = database::db_connection::create_connection_pool(&database_url);
+    let mut conn = database::db_connection::get_connection(&pool)
+        .expect("Failed to get connection from pool");
+    database::db_migrations::run_migrations(&mut conn);
 
     HttpServer::new(move || {
         // Configure custom logger to exclude Swagger UI requests
@@ -43,6 +50,7 @@ async fn main() -> io::Result<()> {
             .max_age(3600);
 
         App::new()
+            .app_data(web::Data::new(pool.clone()))
             .wrap(cors)
             .wrap(logger)
             .app_data(config::errors::json_error_handler())

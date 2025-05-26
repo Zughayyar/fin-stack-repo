@@ -5,7 +5,7 @@ use utoipa::ToSchema;
 use uuid::Uuid;
 use crate::models::schema::users;
 
-#[derive(Debug, Serialize, Deserialize, Queryable, Selectable, ToSchema)]
+#[derive(Debug, Serialize, Deserialize, Queryable, Selectable, Insertable, ToSchema)]
 #[diesel(table_name = users)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct User {
@@ -49,6 +49,21 @@ pub struct NewUser {
     pub password: String,
 }
 
+impl NewUser {
+    pub fn into_user(self) -> User {
+        let now = chrono::Utc::now().naive_utc();
+        User {
+            id: Uuid::new_v4(),
+            first_name: self.first_name,
+            last_name: self.last_name,
+            email: self.email,
+            password: self.password,
+            created_at: now,
+            updated_at: now,
+        }
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize, AsChangeset, ToSchema)]
 #[diesel(table_name = users)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
@@ -65,6 +80,6 @@ pub struct UpdateUser {
     #[schema(value_type = Option<String>, example = "password123")]
     pub password: Option<String>,
 
-    #[schema(value_type = String, example = "2023-01-01T00:00:00")]
-    pub updated_at: NaiveDateTime,
+    #[schema(value_type = Option<String>, example = "2023-01-01T00:00:00")]
+    pub updated_at: Option<NaiveDateTime>,
 }

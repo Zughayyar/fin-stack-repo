@@ -14,6 +14,7 @@ pub struct ErrorResponse {
 
 /// Custom error types for the application
 #[derive(Debug)]
+#[allow(dead_code)]
 pub enum AppError {
     /// Database errors (connection, query, etc.)
     Database(String),
@@ -142,6 +143,7 @@ pub fn json_error_handler() -> actix_web::web::JsonConfig {
 }
 
 /// Helper functions to create error responses
+#[allow(dead_code)]
 pub mod response {
     use super::*;
     
