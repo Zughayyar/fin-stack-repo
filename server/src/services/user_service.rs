@@ -2,8 +2,8 @@ use diesel::prelude::*;
 use uuid::Uuid;
 use chrono::Utc;
 
-use crate::models::{User, NewUser, UpdateUser};
-use crate::models::schema::users;
+use crate::models::user::{User, NewUser, UpdateUser, UserWithIncomes};
+use crate::models::schema::{users, incomes};
 use crate::database::db_connection::DbConnection;
 
 pub fn get_all_users(connection: &mut DbConnection) -> Result<Vec<User>, diesel::result::Error> {
@@ -11,10 +11,20 @@ pub fn get_all_users(connection: &mut DbConnection) -> Result<Vec<User>, diesel:
         .load::<User>(connection)
 }
 
-pub fn get_user_by_id(connection: &mut DbConnection, user_id: Uuid) -> Result<User, diesel::result::Error> {
-    users::table
+pub fn get_user_by_id(connection: &mut DbConnection, user_id: Uuid) -> Result<UserWithIncomes, diesel::result::Error> {
+    let user = users::table
         .filter(users::id.eq(user_id))
-        .first::<User>(connection)
+        .first::<User>(connection)?;
+
+    let user_incomes = incomes::table
+        .filter(incomes::user_id.eq(user_id))
+        .select(crate::models::income::Income::as_select())
+        .load::<crate::models::income::Income>(connection)?;
+
+    Ok(UserWithIncomes {
+        user,
+        incomes: user_incomes,
+    })
 }
 
 pub fn create_user(connection: &mut DbConnection, new_user: NewUser) -> Result<User, diesel::result::Error> {

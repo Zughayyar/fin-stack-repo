@@ -1,5 +1,6 @@
 pub mod user;
 pub mod income;
+pub mod expense;
 pub mod schema;
 
-pub use user::{User, NewUser, UpdateUser};
+pub use user::{NewUser, UpdateUser};

@@ -18,8 +18,8 @@ pub async fn get_all_users(pool: web::Data<DbPool>) -> Result<HttpResponse, AppE
 
 pub async fn get_user_by_id(pool: web::Data<DbPool>, path: web::Path<Uuid>) -> Result<HttpResponse, AppError> {
     let mut conn = pool.get()?;
-    let user = user_service::get_user_by_id(&mut conn, path.into_inner())?;
-    Ok(response::ok(user))
+    let user_with_incomes = user_service::get_user_by_id(&mut conn, path.into_inner())?;
+    Ok(response::ok(user_with_incomes))
 }
 
 pub async fn create_user(pool: web::Data<DbPool>, new_user: web::Json<NewUser>) -> Result<HttpResponse, AppError> {
@@ -32,11 +32,16 @@ pub async fn create_user(pool: web::Data<DbPool>, new_user: web::Json<NewUser>) 
 pub async fn update_user(pool: web::Data<DbPool>, path: web::Path<Uuid>, update_user: web::Json<UpdateUser>) -> Result<HttpResponse, AppError> {
     let mut conn = pool.get()?;
     let user = user_service::update_user(&mut conn, path.into_inner(), update_user.into_inner())?;
-    Ok(response::ok(user))
+    let response = HttpResponse::Ok()
+        .body(format!("User with id {} updated successfully", user.id));
+    Ok(response)
 }
 
 pub async fn delete_user(pool: web::Data<DbPool>, path: web::Path<Uuid>) -> Result<HttpResponse, AppError> {
     let mut conn = pool.get()?;
     let user = user_service::delete_user(&mut conn, path.into_inner())?;
-    Ok(response::ok(user))
+
+    let response = HttpResponse::Ok()
+        .body(format!("User with id {} deleted successfully", user.id));
+    Ok(response)
 }
