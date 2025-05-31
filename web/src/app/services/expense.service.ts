@@ -45,7 +45,7 @@ export class ExpenseService {
 
   // GET /api/expenses/user/{user_id}
   getExpensesByUserId(userId: string): Observable<Expense[]> {
-    return this.http.get<Expense[]>(`${this.apiUrl}/api/expenses/user/${userId}`);
+    return this.http.get<Expense[]>(`${this.apiUrl}/api/expenses/${userId}`);
   }
 
   // POST /api/expenses

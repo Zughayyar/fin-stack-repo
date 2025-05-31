@@ -18,6 +18,8 @@ export class DashboardComponent implements OnInit {
   currentUser: User | null = null;
   expenses: Expense[] = [];
   incomes: Income[] = [];
+  filteredIncomes: Income[] = [];
+  filteredExpenses: Expense[] = [];
   selectedMonth: Date = new Date();
   totalExpenses: number = 0;
   totalIncome: number = 0;
@@ -77,8 +79,19 @@ export class DashboardComponent implements OnInit {
   }
 
   calculateTotals() {
-    this.totalExpenses = this.expenses.reduce((sum, expense) => sum + Number(expense.amount), 0);
-    this.totalIncome = this.incomes.reduce((sum, income) => sum + Number(income.amount), 0);
+    // Filter incomes and expenses by selectedMonth
+    const month = this.selectedMonth.getMonth();
+    const year = this.selectedMonth.getFullYear();
+    this.filteredIncomes = this.incomes.filter(income => {
+      const d = new Date(income.date);
+      return d.getMonth() === month && d.getFullYear() === year;
+    });
+    this.filteredExpenses = this.expenses.filter(expense => {
+      const d = new Date(expense.date);
+      return d.getMonth() === month && d.getFullYear() === year;
+    });
+    this.totalExpenses = this.filteredExpenses.reduce((sum, expense) => sum + Number(expense.amount), 0);
+    this.totalIncome = this.filteredIncomes.reduce((sum, income) => sum + Number(income.amount), 0);
     this.balance = this.totalIncome - this.totalExpenses;
   }
 
@@ -88,7 +101,7 @@ export class DashboardComponent implements OnInit {
       this.selectedMonth.getMonth() + delta,
       1
     );
-    // You might want to reload the data for the new month here
+    this.calculateTotals();
   }
 
   onIncomeAdded() {

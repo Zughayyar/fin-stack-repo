@@ -55,7 +55,7 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-200">
-            <tr *ngFor="let income of incomes" class="hover:bg-gray-50">
+            <tr *ngFor="let income of filteredIncomes" class="hover:bg-gray-50">
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ income.date | date:'MMM d, y' }}</td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ income.source }}</td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${{ income.amount | number:'1.2-2' }}</td>
@@ -117,7 +117,7 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-200">
-            <tr *ngFor="let expense of expenses" class="hover:bg-gray-50">
+            <tr *ngFor="let expense of filteredExpenses" class="hover:bg-gray-50">
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ expense.date | date:'MMM d, y' }}</td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ expense.item_name }}</td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${{ expense.amount | number:'1.2-2' }}</td>
