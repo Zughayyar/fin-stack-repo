@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IncomeService, CreateIncomeRequestBody } from '../../services/income.service';
+import { IncomeService, NewIncome } from '../../services/income.service';
 
 @Component({
   selector: 'app-add-income',
@@ -14,7 +14,7 @@ export class AddIncomeComponent {
   @Output() closed = new EventEmitter<void>();
 
   isOpen = false;
-  income: CreateIncomeRequestBody = {
+  income: NewIncome = {
     user_id: '',
     source: '',
     amount: '',
@@ -50,7 +50,7 @@ export class AddIncomeComponent {
 
   onSubmit() {
     // Format the data according to backend requirements
-    const formattedIncome: CreateIncomeRequestBody = {
+    const formattedIncome: NewIncome = {
       user_id: this.income.user_id,
       source: this.income.source.trim(),
       amount: this.income.amount.toString(),

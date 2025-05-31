@@ -2,9 +2,9 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { ExpenseService, Expense } from '../../services/expense.service';
-import { IncomeService, Income } from '../../services/income.service';
-import { User, UserService } from '../../services/user.service';
+import { ExpenseService, Expense, NewExpense, UpdateExpense } from '../../services/expense.service';
+import { IncomeService, Income, NewIncome, UpdateIncome } from '../../services/income.service';
+import { User, UserWithIncomes, UserService } from '../../services/user.service';
 import { AddIncomeComponent } from '../add-income/add-income.component';
 import { AddExpenseComponent } from '../add-expense/add-expense.component';
 
@@ -22,6 +22,14 @@ export class DashboardComponent implements OnInit {
   totalExpenses: number = 0;
   totalIncome: number = 0;
   balance: number = 0;
+
+  // Edit state
+  editingExpense: Expense | null = null;
+  editingIncome: Income | null = null;
+  showEditExpenseModal = false;
+  showEditIncomeModal = false;
+  editExpenseForm: Partial<Expense> = {};
+  editIncomeForm: Partial<Income> = {};
 
   constructor(
     private expenseService: ExpenseService,
@@ -44,11 +52,11 @@ export class DashboardComponent implements OnInit {
 
   loadUserData(userId: string) {
     this.userService.getUserById(userId).subscribe({
-      next: (user) => {
+      next: (user: UserWithIncomes) => {
         console.log('User data loaded:', user);
         this.currentUser = user;
+        this.incomes = user.incomes || [];
         this.loadExpenses(userId);
-        this.loadIncomes(userId);
       },
       error: (error) => {
         console.error('Error loading user:', error);
@@ -57,25 +65,13 @@ export class DashboardComponent implements OnInit {
   }
 
   loadExpenses(userId: string) {
-    this.expenseService.getExpenses({ user_id: userId }).subscribe({
+    this.expenseService.getExpensesByUserId(userId).subscribe({
       next: (expenses) => {
         this.expenses = expenses;
         this.calculateTotals();
       },
       error: (error) => {
         console.error('Error loading expenses:', error);
-      }
-    });
-  }
-
-  loadIncomes(userId: string) {
-    this.incomeService.getIncomes({ user_id: userId }).subscribe({
-      next: (incomes) => {
-        this.incomes = incomes;
-        this.calculateTotals();
-      },
-      error: (error) => {
-        console.error('Error loading incomes:', error);
       }
     });
   }
@@ -97,13 +93,103 @@ export class DashboardComponent implements OnInit {
 
   onIncomeAdded() {
     if (this.currentUser) {
-      this.loadIncomes(this.currentUser.id);
+      this.loadUserData(this.currentUser.id);
     }
   }
 
   onExpenseAdded() {
     if (this.currentUser) {
       this.loadExpenses(this.currentUser.id);
+    }
+  }
+
+  // Edit Expense
+  startEditExpense(expense: Expense) {
+    this.editingExpense = { ...expense };
+    this.editExpenseForm = { ...expense };
+    this.showEditExpenseModal = true;
+  }
+
+  saveEditExpense() {
+    if (!this.editingExpense) return;
+    const update: UpdateExpense = {
+      item_name: this.editExpenseForm.item_name,
+      amount: this.editExpenseForm.amount,
+      date: this.editExpenseForm.date,
+      description: this.editExpenseForm.description
+    };
+    this.expenseService.updateExpense(this.editingExpense.id, update).subscribe({
+      next: () => {
+        if (this.currentUser) this.loadExpenses(this.currentUser.id);
+        this.cancelEditExpense();
+      },
+      error: (error) => {
+        console.error('Error updating expense:', error);
+      }
+    });
+  }
+
+  cancelEditExpense() {
+    this.editingExpense = null;
+    this.editExpenseForm = {};
+    this.showEditExpenseModal = false;
+  }
+
+  deleteExpense(expense: Expense) {
+    if (confirm('Are you sure you want to delete this expense?')) {
+      this.expenseService.deleteExpense(expense.id).subscribe({
+        next: () => {
+          if (this.currentUser) this.loadExpenses(this.currentUser.id);
+        },
+        error: (error) => {
+          console.error('Error deleting expense:', error);
+        }
+      });
+    }
+  }
+
+  // Edit Income
+  startEditIncome(income: Income) {
+    this.editingIncome = { ...income };
+    this.editIncomeForm = { ...income };
+    this.showEditIncomeModal = true;
+  }
+
+  saveEditIncome() {
+    if (!this.editingIncome) return;
+    const update: UpdateIncome = {
+      source: this.editIncomeForm.source,
+      amount: this.editIncomeForm.amount,
+      date: this.editIncomeForm.date,
+      description: this.editIncomeForm.description
+    };
+    this.incomeService.updateIncome(this.editingIncome.id, update).subscribe({
+      next: () => {
+        if (this.currentUser) this.loadUserData(this.currentUser.id);
+        this.cancelEditIncome();
+      },
+      error: (error) => {
+        console.error('Error updating income:', error);
+      }
+    });
+  }
+
+  cancelEditIncome() {
+    this.editingIncome = null;
+    this.editIncomeForm = {};
+    this.showEditIncomeModal = false;
+  }
+
+  deleteIncome(income: Income) {
+    if (confirm('Are you sure you want to delete this income?')) {
+      this.incomeService.deleteIncome(income.id).subscribe({
+        next: () => {
+          if (this.currentUser) this.loadUserData(this.currentUser.id);
+        },
+        error: (error) => {
+          console.error('Error deleting income:', error);
+        }
+      });
     }
   }
 } 

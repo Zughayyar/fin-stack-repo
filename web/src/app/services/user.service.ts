@@ -8,6 +8,7 @@ export interface User {
   first_name: string;
   last_name: string;
   email: string;
+  password: string;
   created_at: string;
   updated_at: string;
 }
@@ -17,6 +18,29 @@ export interface NewUser {
   last_name: string;
   email: string;
   password: string;
+}
+
+export interface UpdateUser {
+  first_name?: string | null;
+  last_name?: string | null;
+  email?: string | null;
+  password?: string | null;
+  updated_at?: string | null;
+}
+
+export interface Income {
+  id: string;
+  user_id: string;
+  source: string;
+  amount: string;
+  date: string;
+  description?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface UserWithIncomes extends User {
+  incomes: Income[];
 }
 
 @Injectable({
@@ -31,15 +55,15 @@ export class UserService {
     return this.http.get<User[]>(this.apiUrl);
   }
 
-  getUserById(userId: string): Observable<User> {
-    return this.http.get<User>(`${this.apiUrl}/${userId}`);
+  getUserById(userId: string): Observable<UserWithIncomes> {
+    return this.http.get<UserWithIncomes>(`${this.apiUrl}/${userId}`);
   }
 
   createUser(user: NewUser): Observable<User> {
     return this.http.post<User>(this.apiUrl, user);
   }
 
-  updateUser(userId: string, user: Partial<User>): Observable<User> {
+  updateUser(userId: string, user: UpdateUser): Observable<User> {
     return this.http.patch<User>(`${this.apiUrl}/${userId}`, user);
   }
 

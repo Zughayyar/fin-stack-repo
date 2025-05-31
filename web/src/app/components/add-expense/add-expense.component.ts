@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ExpenseService, CreateExpenseRequestBody } from '../../services/expense.service';
+import { ExpenseService, NewExpense } from '../../services/expense.service';
 
 @Component({
   selector: 'app-add-expense',
@@ -14,7 +14,7 @@ export class AddExpenseComponent {
   @Output() closed = new EventEmitter<void>();
 
   isOpen = false;
-  expense: CreateExpenseRequestBody = {
+  expense: NewExpense = {
     user_id: '',
     item_name: '',
     amount: '',
@@ -49,7 +49,7 @@ export class AddExpenseComponent {
   }
 
   onSubmit() {
-    const formattedExpense: CreateExpenseRequestBody = {
+    const formattedExpense: NewExpense = {
       user_id: this.expense.user_id,
       item_name: this.expense.item_name.trim(),
       amount: this.expense.amount.toString(),

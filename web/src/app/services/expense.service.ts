@@ -9,36 +9,25 @@ export interface Expense {
   item_name: string;
   amount: string;
   date: string;
-  description?: string;
+  description?: string | null;
   created_at: string;
   updated_at: string;
 }
 
-// New/Updated Interfaces based on OpenAPI spec
-export interface GetAllExpensesBody {
-  user_id: string;
-}
-
-export interface CreateExpenseRequestBody { // Replaces CreateExpenseRequest
+export interface NewExpense {
   user_id: string;
   item_name: string;
   amount: string;
   date: string;
-  description?: string;
+  description?: string | null;
 }
 
-export interface ExpenseActionBody {
-  user_id: string;
-  expense_id: string;
-}
-
-export interface UpdateExpenseRequestBody { // Replaces Partial<CreateExpenseRequest> for update
-  user_id: string;
-  expense_id: string;
-  item_name?: string;
-  amount?: string;
-  date?: string;
-  description?: string;
+export interface UpdateExpense {
+  item_name?: string | null;
+  amount?: string | null;
+  date?: string | null;
+  description?: string | null;
+  updated_at?: string | null;
 }
 
 @Injectable({
@@ -49,30 +38,28 @@ export class ExpenseService {
 
   constructor(private http: HttpClient) {}
 
-  // GET /api/expenses
-  getExpenses(body: GetAllExpensesBody): Observable<Expense[]> {
-    return this.http.post<Expense[]>(`${this.apiUrl}/api/expenses/get-all`, body);
+  // GET /api/expenses (all expenses)
+  getAllExpenses(): Observable<Expense[]> {
+    return this.http.get<Expense[]>(`${this.apiUrl}/api/expenses`);
+  }
+
+  // GET /api/expenses/user/{user_id}
+  getExpensesByUserId(userId: string): Observable<Expense[]> {
+    return this.http.get<Expense[]>(`${this.apiUrl}/api/expenses/user/${userId}`);
   }
 
   // POST /api/expenses
-  createExpense(expense: CreateExpenseRequestBody): Observable<Expense> {
-    return this.http.post<Expense>(`${this.apiUrl}/api/expenses/create`, expense);
+  createExpense(expense: NewExpense): Observable<Expense> {
+    return this.http.post<Expense>(`${this.apiUrl}/api/expenses`, expense);
   }
 
-  // POST /api/expenses/actions (for get by ID)
-  getExpenseById(body: ExpenseActionBody): Observable<Expense> {
-    return this.http.post<Expense>(`${this.apiUrl}/api/expenses/get-by-id`, body);
+  // PUT /api/expenses/{expense_id}
+  updateExpense(expenseId: string, update: UpdateExpense): Observable<Expense> {
+    return this.http.put<Expense>(`${this.apiUrl}/api/expenses/${expenseId}`, update);
   }
 
-  // PATCH /api/expenses/actions (for update)
-  updateExpense(expense: UpdateExpenseRequestBody): Observable<Expense> {
-    return this.http.patch<Expense>(`${this.apiUrl}/api/expenses/update`, expense);
-  }
-
-  // DELETE /api/expenses/actions (for delete)
-  deleteExpense(body: ExpenseActionBody): Observable<void> {
-    // For DELETE with body, HttpClient.delete might not work as expected across all browsers/servers.
-    // Using http.request for consistency and explicit body handling.
-    return this.http.request<void>('DELETE', `${this.apiUrl}/api/expenses/delete`, { body });
+  // DELETE /api/expenses/{expense_id}
+  deleteExpense(expenseId: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/api/expenses/${expenseId}`);
   }
 } 
