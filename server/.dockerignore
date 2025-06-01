@@ -1,22 +1,44 @@
 # Rust build artifacts
-/target
+target/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
 
 # Git
-.git
+.git/
 .gitignore
 
-# Editor files
-.vscode
-.idea
-
-# Environment files (uncomment if you don't want to include them in the image)
-# .env
-
-# Misc
-README.md
-.DS_Store
-
 # Docker files
-Dockerfile
-docker-compose.yml
-.dockerignore 
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Environment and config
+.env*
+!env.example
+
+# Documentation
+README.md
+docs/
+
+# Scripts
+scripts/
+nginx/
+
+# Logs
+logs/
+*.log
+
+# Test files
+tests/
+
+# CI/CD
+.github/ 
