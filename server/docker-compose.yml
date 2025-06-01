@@ -59,6 +59,28 @@ services:
     volumes:
       - ./logs:/app/logs:rw
 
+  # Angular Frontend
+  frontend:
+    profiles:
+      - with-frontend
+      - with-server
+    build:
+      context: ../Web
+      dockerfile: Dockerfile
+      target: runtime
+    container_name: finstack_frontend
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - finstack-network
+
   # Nginx Reverse Proxy
   nginx:
     profiles:
@@ -75,6 +97,8 @@ services:
       - ./nginx/ssl:/etc/nginx/ssl:ro
     depends_on:
       server:
+        condition: service_healthy
+      frontend:
         condition: service_healthy
     networks:
       - finstack-network
