@@ -77,12 +77,22 @@ async fn main() -> io::Result<()> {
         // Configure custom logger
         let logger = Logger::new("%a \"%r\" %s %b \"%{Referer}i\" \"%{User-Agent}i\" %T");
 
-        // Configure CORS
+        // Configure CORS with more comprehensive settings
         let cors = Cors::default()
             .allow_any_origin()
-            .allowed_methods(vec!["GET", "POST", "PUT", "DELETE", "PATCH"])
-            .allowed_headers(vec!["content-type", "authorization"])
-            .max_age(3600);
+            .allowed_methods(vec!["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"])
+            .allowed_headers(vec![
+                "content-type", 
+                "authorization", 
+                "accept",
+                "origin",
+                "x-requested-with",
+                "access-control-request-method",
+                "access-control-request-headers"
+            ])
+            .expose_headers(vec!["content-type", "x-total-count"])
+            .max_age(3600)
+            .supports_credentials();
 
         App::new()
             .app_data(web::Data::new(pool.clone()))
