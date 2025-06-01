@@ -1,8 +1,12 @@
 # Multi-stage build for optimized production image
 FROM rust:latest AS builder
 
-# Set the number of jobs to 1 to avoid race conditions
+# Aggressive memory management for 1GB servers
 ENV CARGO_BUILD_JOBS=1
+ENV CARGO_NET_RETRY=10
+ENV RUST_BACKTRACE=0
+# Reduce LLVM memory usage
+ENV RUSTFLAGS="-C opt-level=2 -C debuginfo=0"
 
 # Install system dependencies for building
 RUN apt-get update && apt-get install -y \
@@ -28,14 +32,14 @@ RUN touch Cargo.lock
 RUN mkdir src && echo "fn main() {}" > src/main.rs
 
 # Build dependencies only (this layer will be cached)
-RUN cargo build --release && rm -rf src target/release/deps/server*
+RUN CARGO_INCREMENTAL=0 cargo build --release && rm -rf src target/release/deps/server*
 
 # Copy source code
 COPY src ./src
 COPY diesel.toml ./
 
 # Build the application
-RUN cargo build --release
+RUN CARGO_INCREMENTAL=0 cargo build --release
 
 # Runtime stage - smaller base image
 FROM debian:bookworm-slim AS runtime
