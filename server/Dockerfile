@@ -1,16 +1,16 @@
 # Multi-stage build for optimized production image
-FROM rust:alpine AS builder
+FROM rust:latest AS builder
 
-# Limit compilation parallelism for low-memory servers
+# Set the number of jobs to 1 to avoid race conditions
 ENV CARGO_BUILD_JOBS=1
 
-# Install system dependencies for building (Alpine packages)
-RUN apk add --no-cache \
-    pkgconfig \
-    openssl-dev \
-    postgresql-dev \
-    musl-dev \
-    gcc
+# Install system dependencies for building
+RUN apt-get update && apt-get install -y \
+    pkg-config \
+    libssl-dev \
+    libpq-dev \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
 
 # Create app user
 RUN groupadd -r appuser && useradd -r -g appuser appuser
