@@ -1,13 +1,6 @@
 # Multi-stage build for optimized production image
 FROM rust:latest AS builder
 
-# Aggressive memory management for 1GB servers
-ENV CARGO_BUILD_JOBS=1
-ENV CARGO_NET_RETRY=10
-ENV RUST_BACKTRACE=0
-# Reduce LLVM memory usage
-ENV RUSTFLAGS="-C opt-level=2 -C debuginfo=0"
-
 # Install system dependencies for building
 RUN apt-get update && apt-get install -y \
     pkg-config \
