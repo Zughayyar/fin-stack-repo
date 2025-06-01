@@ -13,52 +13,57 @@ if ! docker info > /dev/null 2>&1; then
     exit 1
 fi
 
-# Load environment variables
+# Load environment variables (filtering out comments and empty lines)
 if [ -f "env.prod" ]; then
     echo "📁 Loading production environment variables..."
-    export $(cat env.prod | xargs)
+    export $(grep -v '^#' env.prod | grep -v '^$' | xargs)
 elif [ -f "env.dev" ]; then
     echo "📁 Loading development environment variables..."
-    export $(cat env.dev | xargs)
+    export $(grep -v '^#' env.dev | grep -v '^$' | xargs)
 else
     echo "⚠️  No environment file found. Using default values."
 fi
 
 echo "🔨 Building and starting all services..."
 
-# Start all services with the with-server profile (includes frontend)
-docker-compose --profile with-server up --build -d
+# Start all services with frontend profile
+docker-compose --profile with-frontend up --build -d
 
 echo "⏳ Waiting for services to be healthy..."
 
-# Wait for services to be healthy
-echo "🔍 Checking PostgreSQL..."
-docker-compose exec postgres pg_isready -U ${POSTGRES_USER:-user} -d ${POSTGRES_DB:-finstack}
+# Wait for database to be healthy
+echo "  📊 Waiting for database..."
+timeout 60 bash -c 'until docker-compose exec postgres pg_isready -U ${POSTGRES_USER:-finstack_user} -d ${POSTGRES_DB:-finstack_prod}; do sleep 2; done'
 
-echo "🔍 Checking API server..."
+# Wait for backend to be healthy
+echo "  🦀 Waiting for backend..."
 timeout 60 bash -c 'until curl -sf http://localhost:8080/health; do sleep 2; done'
 
-echo "🔍 Checking frontend..."
-timeout 60 bash -c 'until curl -sf http://localhost:3000/health; do sleep 2; done'
+# Wait for frontend to be healthy
+echo "  🎨 Waiting for frontend..."
+timeout 60 bash -c 'until curl -sf http://localhost:3000; do sleep 2; done'
 
-echo "🔍 Checking nginx..."
-timeout 60 bash -c 'until curl -sf http://localhost:80/health; do sleep 2; done'
+# Wait for nginx to be healthy
+echo "  🌐 Waiting for nginx..."
+timeout 60 bash -c 'until curl -sf http://localhost/health; do sleep 2; done'
 
 echo ""
-echo "✅ FinStack application is running!"
+echo "✅ All services are running!"
 echo ""
 echo "🌐 Access points:"
-echo "   • Frontend (via Nginx): http://localhost"
-echo "   • API (via Nginx): http://localhost/api/"
-echo "   • API (direct): http://localhost:8080"
-echo "   • Frontend (direct): http://localhost:3000"
-echo "   • Database: localhost:5432"
+echo "   • Full Application: http://localhost"
+echo "   • Frontend Only: http://localhost:3000"
+echo "   • API Only: http://localhost:8080"
+echo "   • API Health: http://localhost/api/health"
 echo ""
-echo "📊 To view logs:"
-echo "   docker-compose logs -f [service_name]"
+echo "📊 Database access:"
+echo "   • Host: localhost"
+echo "   • Port: 5432"
+echo "   • Database: ${POSTGRES_DB:-finstack_prod}"
+echo "   • User: ${POSTGRES_USER:-finstack_user}"
 echo ""
-echo "🛑 To stop all services:"
-echo "   docker-compose --profile with-server down"
-echo ""
-echo "📋 Running containers:"
-docker-compose ps 
+echo "🔧 Management commands:"
+echo "   • View logs: docker-compose logs -f [service_name]"
+echo "   • Stop all: docker-compose --profile with-frontend down"
+echo "   • Restart: docker-compose --profile with-frontend restart [service_name]"
+echo "" 
