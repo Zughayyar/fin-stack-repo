@@ -79,7 +79,7 @@ async fn main() -> io::Result<()> {
 
         // Configure CORS
         let cors = Cors::default()
-            .allowed_origin("http://localhost:4200")
+            .allow_any_origin()
             .allowed_methods(vec!["GET", "POST", "PUT", "DELETE", "PATCH"])
             .allowed_headers(vec!["content-type", "authorization"])
             .max_age(3600);
