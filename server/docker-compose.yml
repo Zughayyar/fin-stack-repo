@@ -65,7 +65,7 @@ services:
       - with-frontend
       - with-server
     build:
-      context: ../Web
+      context: ../web
       dockerfile: Dockerfile
       target: runtime
     container_name: finstack_frontend
