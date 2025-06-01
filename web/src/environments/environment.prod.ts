@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: 'http://localhost'
+  apiUrl: typeof window !== 'undefined' ? window.location.origin : 'http://localhost'
 }; 
