@@ -27,9 +27,6 @@ services:
 
   # API Server
   server:
-    profiles:
-      - with-server
-      - full-stack
     build:
       context: .
       dockerfile: Dockerfile
@@ -61,13 +58,9 @@ services:
 
   # Angular Frontend
   frontend:
-    profiles:
-      - with-frontend
-      - full-stack
     build:
-      context: ../web
-      dockerfile: Dockerfile
-      target: runtime
+      context: .
+      dockerfile: Dockerfile.web
     container_name: finstack_frontend
     restart: unless-stopped
     ports:
@@ -83,9 +76,6 @@ services:
 
   # Nginx Reverse Proxy
   nginx:
-    profiles:
-      - with-server
-      - with-nginx
     image: nginx:alpine
     container_name: finstack_nginx
     restart: unless-stopped
@@ -105,8 +95,6 @@ services:
 
   # Database Administration (optional)
   pgadmin:
-    profiles:
-      - with-pgadmin
     image: dpage/pgadmin4:latest
     container_name: finstack_pgadmin
     restart: unless-stopped
