@@ -20,10 +20,6 @@ if ! command -v certbot &> /dev/null; then
     sudo apt install -y certbot python3-certbot-nginx
 fi
 
-# Stop nginx temporarily
-echo "⏸️  Stopping nginx..."
-docker compose stop nginx
-
 # Check if certificate already exists
 if sudo test -f "/etc/letsencrypt/live/${DOMAIN}/fullchain.pem"; then
     echo "📜 Certificate already exists. Checking if renewal is needed..."
@@ -43,12 +39,29 @@ if sudo test -f "/etc/letsencrypt/live/${DOMAIN}/fullchain.pem"; then
         sudo cp /etc/letsencrypt/live/${DOMAIN}/fullchain.pem nginx/ssl/server.crt
         sudo cp /etc/letsencrypt/live/${DOMAIN}/privkey.pem nginx/ssl/server.key
         sudo chown $(whoami):$(whoami) nginx/ssl/server.*
-        echo "✅ Certificates updated! No need to generate new ones."
+        
+        # Update nginx config with real domain (only if not already updated)
+        if grep -q "server_name localhost;" nginx/nginx.conf; then
+            echo "📝 Updating nginx config with domain: $DOMAIN"
+            sed -i "s/server_name localhost;/server_name ${DOMAIN};/g" nginx/nginx.conf
+            echo "🔄 Restarting nginx to apply config changes..."
+            docker compose restart nginx
+        else
+            echo "📝 Nginx config already updated with domain"
+            echo "✅ Nginx is already running with correct configuration"
+        fi
+        
+        echo "✅ Setup complete! No certificate renewal needed."
+        echo "🌐 Your site is available at: https://${DOMAIN}"
         exit 0
     else
         echo "🔄 Certificate expires soon. Renewing..."
     fi
 fi
+
+# Stop nginx temporarily for certificate generation
+echo "⏸️  Stopping nginx for certificate generation..."
+docker compose stop nginx
 
 # Generate or renew certificate
 echo "📜 Generating/renewing Let's Encrypt certificate..."
@@ -61,7 +74,7 @@ sudo certbot certonly --standalone \
     -d ${DOMAIN}
 
 # Copy certificates to nginx directory
-echo "📂 Copying certificates..."
+echo "📂 Copying new certificates..."
 sudo mkdir -p nginx/ssl
 sudo cp /etc/letsencrypt/live/${DOMAIN}/fullchain.pem nginx/ssl/server.crt
 sudo cp /etc/letsencrypt/live/${DOMAIN}/privkey.pem nginx/ssl/server.key
