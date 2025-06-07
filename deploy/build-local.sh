@@ -16,8 +16,9 @@ cd deploy
 CONTAINER_ID=$(docker create rust-builder)
 
 # Copy the built binary from the container to the deploy directory
+# Note: binary is now in target/x86_64-unknown-linux-gnu/release/
 echo "📦 Extracting binary..."
-docker cp $CONTAINER_ID:/app/target/release/server ./server
+docker cp $CONTAINER_ID:/app/target/x86_64-unknown-linux-gnu/release/server ./server
 
 # Clean up the temporary container
 docker rm $CONTAINER_ID

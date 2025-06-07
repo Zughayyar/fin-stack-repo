@@ -1,5 +1,5 @@
 # Build Dockerfile - Use this to build the binary locally
-FROM rust:latest
+FROM --platform=linux/amd64 rust:latest
 
 # Install system dependencies for building
 RUN apt-get update && apt-get install -y \
@@ -15,8 +15,8 @@ WORKDIR /app
 # Copy the server source code (now from parent directory context)
 COPY server/ .
 
-# Build the project in release mode
-RUN cargo build --release
+# Build the project in release mode for x86_64
+RUN cargo build --release --target x86_64-unknown-linux-gnu
 
-# The binary will be at /app/target/release/server
+# The binary will be at /app/target/x86_64-unknown-linux-gnu/release/server
 # Use docker cp to extract it after building 
