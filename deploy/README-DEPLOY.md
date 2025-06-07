@@ -36,7 +36,7 @@ This folder contains everything needed to deploy the full stack application.
 - **Frontend**: <http://your-server-ip:3000> (direct)
 - **API**: <http://your-server-ip:8080> (direct)  
 - **Nginx Proxy**: <http://your-server-ip> (routes everything)
-- **PgAdmin**: <http://your-server-ip:8081>
+- **PgAdmin**: <http://your-server-ip:8081> (<admin@example.com> / admin123)
 - **Health Check**: <http://your-server-ip/health>
 
 ## 🔧 Environment Variables (Optional)
