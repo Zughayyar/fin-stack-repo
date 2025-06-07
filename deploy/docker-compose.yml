@@ -29,10 +29,10 @@ services:
   server:
     profiles:
       - with-server
+      - full-stack
     build:
       context: .
       dockerfile: Dockerfile
-      target: runtime
     container_name: finstack_api
     restart: unless-stopped
     init: true
@@ -63,7 +63,7 @@ services:
   frontend:
     profiles:
       - with-frontend
-      - with-server
+      - full-stack
     build:
       context: ../web
       dockerfile: Dockerfile
