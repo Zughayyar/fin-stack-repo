@@ -1,0 +1,28 @@
+# Build Dockerfile for ARM64 - Use this if your server is ARM64
+FROM rust:latest
+
+# Install system dependencies for building
+RUN apt-get update && apt-get install -y \
+    pkg-config \
+    libssl-dev \
+    libpq-dev \
+    ca-certificates \
+    gcc-aarch64-linux-gnu \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set up cross-compilation environment
+ENV CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc
+ENV CC_aarch64_unknown_linux_gnu=aarch64-linux-gnu-gcc
+ENV CXX_aarch64_unknown_linux_gnu=aarch64-linux-gnu-g++
+
+# Set working directory
+WORKDIR /app
+
+# Copy the server source code
+COPY server/ .
+
+# Add ARM64 target and build
+RUN rustup target add aarch64-unknown-linux-gnu
+RUN cargo build --release --target aarch64-unknown-linux-gnu
+
+# The binary will be at /app/target/aarch64-unknown-linux-gnu/release/server 

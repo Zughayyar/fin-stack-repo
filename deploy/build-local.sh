@@ -6,22 +6,25 @@ set -e
 
 echo "🔨 Building Rust binary in Linux container..."
 
-# Build the image with the build Dockerfile from parent directory
+# Build the image with explicit platform targeting using buildx
 # This allows access to both server/ and deploy/ directories
 cd ..
-docker build -f deploy/Dockerfile.build -t rust-builder .
+docker buildx build --platform linux/amd64 -f deploy/Dockerfile.build -t rust-builder --load .
 cd deploy
 
 # Create a temporary container from the image
 CONTAINER_ID=$(docker create rust-builder)
 
 # Copy the built binary from the container to the deploy directory
-# Note: binary is now in target/x86_64-unknown-linux-gnu/release/
 echo "📦 Extracting binary..."
-docker cp $CONTAINER_ID:/app/target/x86_64-unknown-linux-gnu/release/server ./server
+docker cp $CONTAINER_ID:/app/target/release/server ./server
 
 # Clean up the temporary container
 docker rm $CONTAINER_ID
+
+# Copy config files to deploy directory
+cp ../server/diesel.toml ./diesel.toml
+cp ../server/Cargo.toml ./Cargo.toml
 
 echo "✅ Binary extracted to ./server"
 echo "📂 Binary size: $(ls -lh server | awk '{print $5}')"
