@@ -8,6 +8,7 @@ use utoipa_swagger_ui::SwaggerUi;
 
 mod config;
 mod controllers;
+mod middleware;
 mod models;
 mod routes;
 mod services;
@@ -16,11 +17,10 @@ mod database;
 #[derive(OpenApi)]
 #[openapi(
     paths(
-        controllers::user_controller::get_all_users,
-        controllers::user_controller::get_user_by_id,
-        controllers::user_controller::create_user,
-        controllers::user_controller::update_user,
-        controllers::user_controller::delete_user,
+        controllers::auth_controller::register,
+        controllers::auth_controller::login,
+        controllers::auth_controller::me,
+        controllers::auth_controller::logout,
         controllers::income_controller::get_all_incomes,
         controllers::income_controller::get_incomes_by_user_id,
         controllers::income_controller::create_income,
@@ -34,10 +34,12 @@ mod database;
     ),
     components(
         schemas(
-            models::user::User,
-            models::user::NewUser,
-            models::user::UpdateUser,
-            models::user::UserWithIncomes,
+            models::auth::LoginRequest,
+            models::auth::RegisterRequest,
+            models::auth::TokenResponse,
+            models::auth::UserInfo,
+            models::auth::AuthError,
+
             models::income::Income,
             models::income::NewIncome,
             models::income::UpdateIncome,
@@ -48,7 +50,7 @@ mod database;
         )
     ),
     tags(
-        (name = "users", description = "User management endpoints"),
+        (name = "auth", description = "Authentication endpoints"),
         (name = "incomes", description = "Income management endpoints"),
         (name = "expenses", description = "Expense management endpoints")
     )
