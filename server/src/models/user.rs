@@ -37,6 +37,7 @@ pub struct UserWithIncomes {
 #[diesel(table_name = users)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct NewUser {
+    pub id: Uuid,
     #[schema(example = "John")]
     pub first_name: String,
     #[schema(example = "Doe")]
@@ -45,19 +46,33 @@ pub struct NewUser {
     pub email: String,
     #[schema(example = "password123")]
     pub password: String,
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
 }
 
 impl NewUser {
-    pub fn into_user(self) -> User {
+    pub fn new(first_name: String, last_name: String, email: String, password: String) -> Self {
         let now = chrono::Utc::now().naive_utc();
-        User {
+        NewUser {
             id: Uuid::new_v4(),
+            first_name,
+            last_name,
+            email,
+            password,
+            created_at: now,
+            updated_at: now,
+        }
+    }
+
+    pub fn into_user(self) -> User {
+        User {
+            id: self.id,
             first_name: self.first_name,
             last_name: self.last_name,
             email: self.email,
             password: self.password,
-            created_at: now,
-            updated_at: now,
+            created_at: self.created_at,
+            updated_at: self.updated_at,
         }
     }
 }

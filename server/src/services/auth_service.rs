@@ -98,12 +98,12 @@ impl AuthService {
             })?;
 
         // Create new user
-        let new_user = NewUser {
-            first_name: register_data.first_name,
-            last_name: register_data.last_name,
-            email: register_data.email,
-            password: hashed_password,
-        };
+        let new_user = NewUser::new(
+            register_data.first_name,
+            register_data.last_name,
+            register_data.email,
+            hashed_password,
+        );
 
         let user = diesel::insert_into(users::table)
             .values(&new_user)
